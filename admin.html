@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GFA Admin - Secure Approval</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 style="color: #d32f2f">GFA Admin Panel</h1>
+      <div
+        id="adminStatus"
+        class="stats-bar"
+        style="
+          background: #f0f2f5;
+          padding: 10px;
+          border-radius: 8px;
+          margin-bottom: 15px;
+          text-align: center;
+        ">
+        Verifying Admin Credentials...
+      </div>
+
+      <div id="adminContent" style="display: none">
+        <div id="stats" style="font-weight: bold; margin-bottom: 15px">
+          Pending: 0
+        </div>
+        <div id="pendingList"></div>
+      </div>
+
+      <button
+        onclick="window.location.href='index.html'"
+        style="background: #666; margin-top: 20px">
+        Return to Main Site
+      </button>
+    </div>
+
+    <script type="module">
+      import { db } from "./app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+      import {
+        collection,
+        query,
+        where,
+        onSnapshot,
+        doc,
+        updateDoc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+      const auth = getAuth();
+      const adminStatus = document.getElementById("adminStatus");
+      const adminContent = document.getElementById("adminContent");
+      const listContainer = document.getElementById("pendingList");
+
+      // Security Check: Verify Admin Status
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const userDoc = await getDoc(doc(db, "applicants", user.uid));
+
+          if (userDoc.exists() && userDoc.data().isAdmin === true) {
+            adminStatus.innerHTML = "✅ Admin Access Granted";
+            adminStatus.style.background = "#e8f5e9";
+            adminContent.style.display = "block";
+            loadPendingQueue();
+          } else {
+            alert("Access Denied: You do not have GFA Admin privileges.");
+            window.location.href = "index.html";
+          }
+        } else {
+          alert("Please login first.");
+          window.location.href = "index.html";
+        }
+      });
+
+      // Load Queue Logic
+      function loadPendingQueue() {
+        const q = query(
+          collection(db, "applicants"),
+          where("status", "==", "pending")
+        );
+
+        onSnapshot(q, (snapshot) => {
+          listContainer.innerHTML = "";
+          document.getElementById(
+            "stats"
+          ).innerText = `Pending Approvals: ${snapshot.size}`;
+
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const card = document.createElement("div");
+            card.className = "ref-card";
+            card.style.borderLeft = "5px solid #d32f2f";
+            card.style.marginBottom = "10px";
+            card.style.padding = "10px";
+            card.style.background = "#fff";
+
+            card.innerHTML = `
+                        <strong>${data.fullName}</strong><br>
+                        <small>${data.region} | ${data.league}</small><br>
+                        <button onclick="approveUser('${docSnap.id}')" style="background:#2e7d32; margin-top:10px; padding:8px; width:100%;">
+                            Approve Referee
+                        </button>
+                    `;
+            listContainer.appendChild(card);
+          });
+        });
+      }
+
+      // Approval Logic
+      window.approveUser = async (userId) => {
+        const userRef = doc(db, "applicants", userId);
+        try {
+          await updateDoc(userRef, { status: "approved" });
+          alert("Referee approved and notified!");
+        } catch (error) {
+          console.error("Update failed:", error);
+          alert("You do not have permission to approve users.");
+        }
+      };
+    </script>
+  </body>
+</html>
