@@ -2,62 +2,101 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>GFA Referee Connect</title>
     <style>
-      /* 1. THEME: Royal Blue Gradient */
+      /* --- 1. GLOBAL MOBILE RESET --- */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow-x: hidden;
+      }
+
       body {
         background: linear-gradient(135deg, #4169e1 0%, #00102d 100%);
-        min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: center;
-        padding: 20px;
-        margin: 0;
-        font-family: "Segoe UI", sans-serif;
+        align-items: flex-start; /* Pushes content to the top */
+        padding-top: 10px; /* Minimal top gap */
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       }
+
       /* Glassmorphism Container */
       .container {
-        width: 80%;
-        max-width: 300px;
+        width: 90%;
+        max-width: 340px;
         background: rgba(108, 188, 227, 0.98);
-        padding: 30px;
+        padding: 20px;
         border-radius: 24px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        margin-top: 5px; /* Pushes app shell higher */
       }
+
       .logo {
         display: block;
-        margin: 0 auto 10px;
-        max-width: 100px;
+        margin: 0 auto 5px;
+        max-width: 70px; /* Smaller logo */
+        height: auto;
       }
+
+      header {
+        text-align: center;
+        margin-bottom: 15px;
+      }
+
+      header h1 {
+        color: #002366;
+        margin: 0;
+        font-size: 1.3rem;
+      }
+
+      header p {
+        color: #035416;
+        font-size: 0.75rem;
+        margin: 2px 0;
+        font-weight: bold;
+      }
+
+      /* View Transitions */
       .view-section {
         display: none;
       }
+
       .active-view {
         display: block;
         animation: fadeIn 0.4s ease;
       }
+
       @keyframes fadeIn {
         from {
           opacity: 0;
+          transform: translateY(5px);
         }
         to {
           opacity: 1;
+          transform: translateY(0);
         }
       }
 
+      /* Form Elements */
       input,
       select {
         width: 100%;
-        padding: 12px;
-        margin-bottom: 15px;
+        padding: 10px;
+        margin-bottom: 12px;
         border-radius: 8px;
         border: 1px solid #ccc;
         box-sizing: border-box;
+        font-size: 16px;
       }
+
       button {
         width: 100%;
-        padding: 15px;
+        padding: 12px;
         border: none;
         border-radius: 8px;
         background: #024705;
@@ -66,81 +105,102 @@
         cursor: pointer;
       }
 
-      /* Member Card & Reveal Logic */
+      /* Member Cards */
       .ref-card {
-        background: #5fb3d2;
-        padding: 15px;
-        border-radius: 12px;
-        margin-bottom: 12px;
+        background: #ffffff;
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
         border-left: 5px solid #010f37;
-        box-shadow: 0 2px 5px rgba(245, 6, 125, 0.05);
       }
+
       .contact-details {
         display: none;
         margin-top: 10px;
         padding-top: 10px;
-        border-top: 1px solid #ddd;
+        border-top: 1px solid #eee;
       }
+
       .contact-actions {
         display: flex;
-        gap: 10px;
+        gap: 8px;
         margin-top: 10px;
       }
+
       .action-link {
         flex: 1;
         text-align: center;
-        padding: 10px;
-        border-radius: 8px;
+        padding: 8px;
+        border-radius: 6px;
         text-decoration: none;
-        color: rgb(250, 250, 252);
-        font-size: 14px;
+        color: white;
+        font-size: 13px;
         font-weight: bold;
       }
+
       .wa-btn {
         background-color: #25d366;
-      } /* WhatsApp Green */
+      }
       .call-btn {
-        background-color: hsl(240, 90%, 16%);
+        background-color: #002366;
       }
       .del-btn {
         background-color: #c62828;
-        margin-top: 5px;
-        font-size: 11px;
-        padding: 5px;
+        font-size: 10px;
+        padding: 4px;
+        width: auto;
+      }
+
+      .forgot-link {
+        display: block;
+        text-align: right;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        font-size: 0.75rem;
+        color: #002366;
+        text-decoration: none;
+        font-weight: bold;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <img
-        src="Ghana-Football-Association.jpg"
-        alt="Ghana-Football-Association.jpg"
-        class="logo" />
-      <header style="text-align: center; margin-bottom: 25px">
-        <h1 style="color: #002366; margin: 0">Referee Connect</h1>
-        <p style="color: #035416; font-size: 0.9rem">
-          Match Coordination Portal
-        </p>
+      <img src="Ghana-Football-Association.jpg" alt="Logo" class="logo" />
+
+      <header>
+        <h1>Referee Connect</h1>
+        <p>Match Coordination Portal</p>
       </header>
 
       <div id="loginView" class="view-section active-view">
         <input type="email" id="loginEmail" placeholder="Email Address" />
         <input type="password" id="loginPass" placeholder="Password" />
+        <a href="#" onclick="handleForgotPassword()" class="forgot-link"
+          >Forgot Password?</a
+        >
+
         <button onclick="handleLogin()">Login</button>
-        <p style="text-align: center; margin-top: 10px">
-          New? <a href="#" onclick="showView('registerView')">Sign up</a>
+
+        <p style="text-align: center; margin-top: 15px; font-size: 0.85rem">
+          New?
+          <a
+            href="#"
+            onclick="showView('registerView')"
+            style="color: #002366; font-weight: bold"
+            >Sign up</a
+          >
         </p>
       </div>
 
       <div id="registerView" class="view-section">
         <input type="text" id="regName" placeholder="Full Name" />
         <select id="regRole">
-          <option value="" disabled selected>Select Role</option>
+          <option value="" disabled selected>Role</option>
           <option value="Referee">Referee</option>
           <option value="Assistant Referee">Assistant Referee</option>
         </select>
         <select id="regRegion">
-          <option value="" disabled selected>Select Region</option>
+          <option value="" disabled selected>Region</option>
           <option value="Greater Accra">Greater Accra</option>
           <option value="Ashanti">Ashanti</option>
           <option value="Northern">Northern</option>
@@ -149,17 +209,19 @@
           <option value="Eastern">Eastern</option>
         </select>
         <select id="regLeague">
-          <option value="" disabled selected>League Category</option>
+          <option value="" disabled selected>League</option>
           <option value="Premier">Premier</option>
           <option value="Division One">Division One</option>
           <option value="Women Premier">Women Premier</option>
         </select>
-        <input type="tel" id="regPhone" placeholder="Phone (e.g. 0244000000)" />
+        <input type="tel" id="regPhone" placeholder="Phone Number" />
         <input type="email" id="regEmail" placeholder="Email" />
         <input type="password" id="regPass" placeholder="Password" />
         <button onclick="handleRegister()">Submit Registration</button>
-        <p style="text-align: center; margin-top: 15px">
-          <a href="#" onclick="showView('loginView')">Back to Login</a>
+        <p style="text-align: center; margin-top: 10px">
+          <a href="#" onclick="showView('loginView')" style="font-size: 0.8rem"
+            >Back to Login</a
+          >
         </p>
       </div>
 
@@ -167,7 +229,7 @@
         <input
           type="text"
           id="searchInput"
-          placeholder="Search by name..."
+          placeholder="Search name..."
           onkeyup="runFilter()" />
         <div id="refList"></div>
         <div style="display: flex; gap: 10px; margin-top: 15px">
@@ -175,41 +237,39 @@
             id="adminBtn"
             onclick="showView('adminView')"
             style="display: none; background: #002366">
-            Admin Panel
+            Admin
           </button>
           <button onclick="logout()" style="background: #3e74c5">Logout</button>
         </div>
       </div>
 
       <div id="adminView" class="view-section">
-        <h3 style="color: #d32f2f">Pending Approvals</h3>
+        <h3 style="color: #d32f2f; font-size: 1rem">Pending</h3>
         <div id="pendingList"></div>
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee" />
-        <h3 style="color: #002366">Manage All Members</h3>
-        <input
-          type="text"
-          id="adminSearchInput"
-          placeholder="Search to delete..."
-          onkeyup="runAdminFilter()" />
-        <div id="adminFullList"></div>
-        <button
-          onclick="showView('directoryView')"
-          style="background: #4169e1; margin-top: 10px">
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc" />
+        <button onclick="showView('directoryView')" style="background: #4169e1">
           Back
         </button>
       </div>
     </div>
 
     <script type="module">
+      const firebaseConfig = {
+        apiKey: "AIzaSyDE6XmDl8CF4oEYHZZ_01tn0ct_N84uTxo",
+        authDomain: "referees-connect-app.firebaseapp.com",
+        projectId: "referees-connect-app",
+        storageBucket: "referees-connect-app.firebasestorage.app",
+        messagingSenderId: "218749388164",
+        appId: "1:218749388164:web:f6399de1346af790df49d1",
+        measurementId: "G-BSW1J449HC",
+      };
+
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import {
-        loginUser,
-        registerUser,
-        listenToApprovedReferees,
-        db,
-      } from "./app.js";
-      import {
+        getFirestore,
         doc,
         getDoc,
+        setDoc,
         collection,
         query,
         where,
@@ -217,6 +277,17 @@
         updateDoc,
         deleteDoc,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        signOut,
+        sendPasswordResetEmail,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
 
       let localRefList = [];
       let userData = null;
@@ -231,162 +302,145 @@
       window.handleLogin = async () => {
         const email = document.getElementById("loginEmail").value;
         const pass = document.getElementById("loginPass").value;
+        if (!email || !pass) return alert("Fill fields.");
         try {
-          const user = await loginUser(email, pass);
-          const userDoc = await getDoc(doc(db, "applicants", user.uid));
-          if (userDoc.exists() && userDoc.data().status === "approved") {
+          const userCred = await signInWithEmailAndPassword(auth, email, pass);
+          const userDoc = await getDoc(
+            doc(db, "applicants", userCred.user.uid)
+          );
+          if (userDoc.exists()) {
             userData = userDoc.data();
-            if (userData.isAdmin)
-              document.getElementById("adminBtn").style.display = "block";
-            initDirectory();
-          } else {
-            alert("Account pending GFA verification.");
+            if (userData.status === "approved") {
+              if (userData.isAdmin)
+                document.getElementById("adminBtn").style.display = "block";
+              initDirectory();
+            } else {
+              alert("Pending GFA approval.");
+              await signOut(auth);
+            }
           }
         } catch (e) {
           alert("Login Error: " + e.message);
         }
       };
 
+      window.handleForgotPassword = async () => {
+        const email = document.getElementById("loginEmail").value;
+        if (!email) return alert("Enter email address above first.");
+        try {
+          await sendPasswordResetEmail(auth, email);
+          alert("Reset link sent to your email!");
+        } catch (e) {
+          alert("Error: " + e.message);
+        }
+      };
+
       window.handleRegister = async () => {
+        const email = document.getElementById("regEmail").value;
+        const pass = document.getElementById("regPass").value;
         const data = {
           fullName: document.getElementById("regName").value,
           role: document.getElementById("regRole").value,
           region: document.getElementById("regRegion").value,
           league: document.getElementById("regLeague").value,
           phone: document.getElementById("regPhone").value,
-          email: document.getElementById("regEmail").value,
-          password: document.getElementById("regPass").value,
+          email: email,
+          status: "pending",
+          isAdmin: false,
         };
-        await registerUser(data);
-        alert("Registration Submitted for GFA Approval.");
-        showView("loginView");
+        try {
+          const userCred = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            pass
+          );
+          await setDoc(doc(db, "applicants", userCred.user.uid), data);
+          alert("Submitted! Contact GFA for approval.");
+          showView("loginView");
+        } catch (e) {
+          alert("Error: " + e.message);
+        }
       };
 
       function initDirectory() {
         showView("directoryView");
-        listenToApprovedReferees((list) => {
-          localRefList = list;
-          document.getElementById("refList").innerHTML =
-            '<p style="text-align:center; color:#666; margin-top:20px;">Search a name to see details...</p>';
-        });
-        setupAdminQueue();
-      }
-
-      // --- DIRECTORY FILTER & REVEAL ---
-      window.runFilter = () => {
-        const queryText = document
-          .getElementById("searchInput")
-          .value.toLowerCase()
-          .trim();
-        const container = document.getElementById("refList");
-        if (queryText.length === 0) {
-          container.innerHTML =
-            '<p style="text-align:center; color:#666; margin-top:20px;">Search a name to see details...</p>';
-          return;
-        }
-        const filtered = localRefList.filter((r) =>
-          r.fullName.toLowerCase().includes(queryText)
-        );
-        container.innerHTML = filtered
-          .map((ref) => {
-            let waPhone = ref.phone.replace(/\s+/g, "");
-            if (waPhone.startsWith("0")) waPhone = "233" + waPhone.substring(1);
-            return `
-                <div class="ref-card">
-                    <div onclick="toggleDetails(this)" style="cursor:pointer;">
-                        <strong style="color:#002366;">${ref.fullName}</strong><br>
-                        <small style="color:#2e7d32;">${ref.region} • Tap to view</small>
-                    </div>
-                    <div class="contact-details">
-                        <p><strong>Role:</strong> ${ref.role}</p>
-                        <p><strong>League:</strong> ${ref.league}</p>
-                        <p><strong>Phone:</strong> ${ref.phone}</p>
-                        <div class="contact-actions">
-                            <a href="https://wa.me/${waPhone}" class="action-link wa-btn" target="_blank">WhatsApp</a>
-                            <a href="tel:${ref.phone}" class="action-link call-btn">Call</a>
-                        </div>
-                    </div>
-                </div>`;
-          })
-          .join("");
-      };
-
-      window.toggleDetails = (el) => {
-        const details = el.nextElementSibling;
-        details.style.display =
-          details.style.display === "block" ? "none" : "block";
-      };
-
-      // --- ADMIN MANAGEMENT ---
-      function setupAdminQueue() {
-        onSnapshot(
-          query(collection(db, "applicants"), where("status", "==", "pending")),
-          (snap) => {
-            const list = document.getElementById("pendingList");
-            list.innerHTML = snap.docs
-              .map(
-                (
-                  d
-                ) => `<div class="ref-card" style="border-left-color:#d32f2f;">
-                    <strong>${d.data().fullName}</strong><br>
-                    <button onclick="approveUser('${
-                      d.id
-                    }')" style="width:auto; padding:5px 10px; margin-right:5px;">Approve</button>
-                    <button onclick="deleteMember('${d.id}', '${
-                  d.data().fullName
-                }')" class="del-btn" style="width:auto;">Delete</button>
-                </div>`
-              )
-              .join("");
-          }
-        );
         onSnapshot(
           query(
             collection(db, "applicants"),
             where("status", "==", "approved")
           ),
           (snap) => {
-            window.fullApprovedList = snap.docs.map((d) => ({
-              id: d.id,
-              ...d.data(),
-            }));
-            renderAdminList(window.fullApprovedList);
+            localRefList = snap.docs.map((d) => d.data());
+            document.getElementById("refList").innerHTML =
+              '<p style="text-align:center; color:#666; font-size:0.8rem; margin-top:10px;">Search names above.</p>';
+          }
+        );
+        if (userData.isAdmin) setupAdminQueue();
+      }
+
+      window.runFilter = () => {
+        const q = document
+          .getElementById("searchInput")
+          .value.toLowerCase()
+          .trim();
+        const container = document.getElementById("refList");
+        if (q.length === 0) {
+          container.innerHTML =
+            '<p style="text-align:center; color:#666;">Search names.</p>';
+          return;
+        }
+        const filtered = localRefList.filter((r) =>
+          r.fullName.toLowerCase().includes(q)
+        );
+        container.innerHTML = filtered
+          .map((ref) => {
+            let waPhone = ref.phone.replace(/\s+/g, "");
+            if (waPhone.startsWith("0")) waPhone = "233" + waPhone.substring(1);
+            return `
+            <div class="ref-card">
+              <div onclick="toggleDetails(this)" style="cursor:pointer;">
+                <strong style="color:#002366;">${ref.fullName}</strong><br>
+                <small style="color:#2e7d32;">${ref.region} • View</small>
+              </div>
+              <div class="contact-details">
+                <p>Role: ${ref.role}<br>League: ${ref.league}<br>Phone: ${ref.phone}</p>
+                <div class="contact-actions">
+                  <a href="https://wa.me/${waPhone}" class="action-link wa-btn" target="_blank">WhatsApp</a>
+                  <a href="tel:${ref.phone}" class="action-link call-btn">Call</a>
+                </div>
+              </div>
+            </div>`;
+          })
+          .join("");
+      };
+
+      window.toggleDetails = (el) => {
+        const d = el.nextElementSibling;
+        d.style.display = d.style.display === "block" ? "none" : "block";
+      };
+
+      function setupAdminQueue() {
+        onSnapshot(
+          query(collection(db, "applicants"), where("status", "==", "pending")),
+          (snap) => {
+            document.getElementById("pendingList").innerHTML = snap.docs
+              .map(
+                (d) => `
+            <div class="ref-card" style="border-left-color:#d32f2f;">
+              <strong>${d.data().fullName}</strong><br>
+              <button onclick="approveUser('${
+                d.id
+              }')" style="width:auto; padding:4px 8px; margin-top:5px; font-size:10px;">Approve</button>
+            </div>`
+              )
+              .join("");
           }
         );
       }
 
-      function renderAdminList(list) {
-        const container = document.getElementById("adminFullList");
-        container.innerHTML = list
-          .map(
-            (ref) => `
-                <div class="ref-card" style="padding:10px;">
-                    <strong>${ref.fullName}</strong><br>
-                    <button onclick="deleteMember('${ref.id}', '${ref.fullName}')" class="del-btn">Remove Permanent</button>
-                </div>`
-          )
-          .join("");
-      }
-
-      window.runAdminFilter = () => {
-        const q = document
-          .getElementById("adminSearchInput")
-          .value.toLowerCase();
-        renderAdminList(
-          window.fullApprovedList.filter((r) =>
-            r.fullName.toLowerCase().includes(q)
-          )
-        );
-      };
-
       window.approveUser = async (uid) => {
         await updateDoc(doc(db, "applicants", uid), { status: "approved" });
-      };
-
-      window.deleteMember = async (uid, name) => {
-        if (confirm(`Delete ${name} permanently?`)) {
-          await deleteDoc(doc(db, "applicants", uid));
-        }
+        alert("Approved!");
       };
 
       window.logout = () => location.reload();
