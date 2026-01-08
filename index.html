@@ -249,247 +249,163 @@
     </div>
 
     <script type="module">
-      const firebaseConfig = {
+    const firebaseConfig = {
         apiKey: "AIzaSyDE6XmDl8CF4oEYHZZ_01tn0ct_N84uTxo",
         authDomain: "referees-connect-app.firebaseapp.com",
         projectId: "referees-connect-app",
         storageBucket: "referees-connect-app.firebasestorage.app",
         messagingSenderId: "218749388164",
         appId: "1:218749388164:web:f6399de1346af790df49d1",
-        measurementId: "G-BSW1J449HC",
-      };
+        measurementId: "G-BSW1J449HC"
+    };
 
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import {
-        getFirestore,
-        doc,
-        getDoc,
-        setDoc,
-        collection,
-        query,
-        where,
-        onSnapshot,
-        updateDoc,
-        deleteDoc,
-      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-      import {
-        getAuth,
-        signInWithEmailAndPassword,
-        createUserWithEmailAndPassword,
-        signOut,
-        sendPasswordResetEmail,
-      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-      let localRefList = []; // For the search directory
-      let allApprovedList = []; // For the admin manage list
-      let userData = null;
+    let localRefList = [];
+    let allApprovedList = [];
+    let userData = null;
 
-      window.showView = (viewId) => {
-        document
-          .querySelectorAll(".view-section")
-          .forEach((v) => v.classList.remove("active-view"));
+    window.showView = (viewId) => {
+        document.querySelectorAll(".view-section").forEach((v) => v.classList.remove("active-view"));
         document.getElementById(viewId).classList.add("active-view");
-      };
+    };
 
-      window.handleLogin = async () => {
+    // --- LOGIN & AUTH ---
+    window.handleLogin = async () => {
         const email = document.getElementById("loginEmail").value;
         const pass = document.getElementById("loginPass").value;
         try {
-          const userCred = await signInWithEmailAndPassword(auth, email, pass);
-          const userDoc = await getDoc(
-            doc(db, "applicants", userCred.user.uid)
-          );
-          if (userDoc.exists()) {
-            userData = userDoc.data();
-            if (userData.status === "approved") {
-              if (userData.isAdmin)
-                document.getElementById("adminBtn").style.display = "block";
-              initDirectory();
-            } else {
-              alert("Pending GFA approval.");
-              await signOut(auth);
+            const userCred = await signInWithEmailAndPassword(auth, email, pass);
+            const userDoc = await getDoc(doc(db, "applicants", userCred.user.uid));
+            if (userDoc.exists()) {
+                userData = userDoc.data();
+                if (userData.status === "approved") {
+                    if (userData.isAdmin) document.getElementById("adminBtn").style.display = "block";
+                    initDirectory();
+                } else { alert("Pending GFA approval."); await signOut(auth); }
             }
-          }
-        } catch (e) {
-          alert("Error: " + e.message);
-        }
-      };
+        } catch (e) { alert("Error: " + e.message); }
+    };
 
-      window.handleForgotPassword = async () => {
+    window.handleForgotPassword = async () => {
         const email = document.getElementById("loginEmail").value;
         if (!email) return alert("Type your email first.");
-        try {
-          await sendPasswordResetEmail(auth, email);
-          alert("Reset link sent to email!");
-        } catch (e) {
-          alert(e.message);
-        }
-      };
+        try { await sendPasswordResetEmail(auth, email); alert("Reset link sent to email!"); } catch (e) { alert(e.message); }
+    };
 
-      window.handleRegister = async () => {
+    window.handleRegister = async () => {
         const email = document.getElementById("regEmail").value;
         const pass = document.getElementById("regPass").value;
         const data = {
-          fullName: document.getElementById("regName").value,
-          region: document.getElementById("regRegion").value,
-          phone: document.getElementById("regPhone").value,
-          email: email,
-          status: "pending",
-          isAdmin: false,
+            fullName: document.getElementById("regName").value,
+            region: document.getElementById("regRegion").value,
+            phone: document.getElementById("regPhone").value,
+            email: email, status: "pending", isAdmin: false
         };
         try {
-          const userCred = await createUserWithEmailAndPassword(
-            auth,
-            email,
-            pass
-          );
-          await setDoc(doc(db, "applicants", userCred.user.uid), data);
-          alert("Registration Successful. Pending Approval.");
-          showView("loginView");
-        } catch (e) {
-          alert(e.message);
-        }
-      };
+            const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+            await setDoc(doc(db, "applicants", userCred.user.uid), data); 
+            alert("Registration Successful. Pending Approval.");
+            showView("loginView");
+        } catch (e) { alert(e.message); }
+    };
 
-      function initDirectory() {
+    // --- DIRECTORY ---
+    function initDirectory() {
         showView("directoryView");
-        // Public Directory Sync
-        onSnapshot(
-          query(
-            collection(db, "applicants"),
-            where("status", "==", "approved")
-          ),
-          (snap) => {
-            localRefList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-            allApprovedList = localRefList; // Sync admin list too
+        onSnapshot(query(collection(db, "applicants"), where("status", "==", "approved")), (snap) => {
+            localRefList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            allApprovedList = localRefList;
             renderAdminManageList(allApprovedList);
-            document.getElementById("refList").innerHTML =
-              '<p style="text-align:center; color:#666;">Search name/region above.</p>';
-          }
-        );
-        if (userData.isAdmin) setupAdminListeners();
-      }
+            document.getElementById("refList").innerHTML = '<p style="text-align:center; color:#666;">Search name/region above.</p>';
+        });
+        if(userData.isAdmin) setupAdminListeners();
+    }
 
-      window.runFilter = () => {
-        const q = document
-          .getElementById("searchInput")
-          .value.toLowerCase()
-          .trim();
+    window.runFilter = () => {
+        const q = document.getElementById("searchInput").value.toLowerCase().trim();
         const container = document.getElementById("refList");
-        if (q.length === 0) {
-          container.innerHTML =
-            '<p style="text-align:center; color:#666;">Search names.</p>';
-          return;
-        }
-        const filtered = localRefList.filter(
-          (r) =>
-            r.fullName.toLowerCase().includes(q) ||
-            r.region.toLowerCase().includes(q)
-        );
-        container.innerHTML = filtered
-          .map(
-            (ref) => `
-                <div class="ref-card">
-                    <div onclick="toggleDetails(this)" style="cursor:pointer;">
-                        <strong>${ref.fullName}</strong><br><small>${
-              ref.region
-            }</small>
+        if (q.length === 0) { container.innerHTML = '<p style="text-align:center; color:#666;">Search names.</p>'; return; }
+        const filtered = localRefList.filter(r => r.fullName.toLowerCase().includes(q) || r.region.toLowerCase().includes(q));
+        container.innerHTML = filtered.map(ref => `
+            <div class="ref-card">
+                <div onclick="toggleDetails(this)" style="cursor:pointer;">
+                    <strong>${ref.fullName}</strong><br><small>${ref.region}</small>
+                </div>
+                <div class="contact-details">
+                    <p>Phone: ${ref.phone}<br>Email: ${ref.email}</p>
+                    <div class="contact-actions">
+                        <a href="tel:${ref.phone}" class="action-link call-btn">Call</a>
+                        <a href="https://wa.me/${ref.phone.replace(/^0/, '233')}" class="action-link wa-btn" target="_blank">WhatsApp</a>
                     </div>
-                    <div class="contact-details">
-                        <p>Phone: ${ref.phone}<br>Email: ${ref.email}</p>
-                        <div class="contact-actions">
-                            <a href="tel:${
-                              ref.phone
-                            }" class="action-link call-btn">Call</a>
-                            <a href="https://wa.me/${ref.phone.replace(
-                              /^0/,
-                              "233"
-                            )}" class="action-link wa-btn" target="_blank">WhatsApp</a>
-                        </div>
-                    </div>
-                </div>`
-          )
-          .join("");
-      };
+                </div>
+            </div>`).join("");
+    };
 
-      window.toggleDetails = (el) => {
+    window.toggleDetails = (el) => {
         const d = el.nextElementSibling;
         d.style.display = d.style.display === "block" ? "none" : "block";
-      };
+    };
 
-      // --- ADMIN SPECIFIC LOGIC ---
-      function setupAdminListeners() {
-        // Pending Applicants
-        onSnapshot(
-          query(collection(db, "applicants"), where("status", "==", "pending")),
-          (snap) => {
-            document.getElementById("pendingList").innerHTML = snap.docs
-              .map(
-                (d) => `
-                    <div class="ref-card" style="border-left-color:#d32f2f;">
-                        <strong>${d.data().fullName}</strong> (${
-                  d.data().region
-                })<br>
-                        <button onclick="approveUser('${
-                          d.id
-                        }')" style="width:auto; padding:5px 10px; margin-top:5px; font-size:11px;">Approve</button>
-                        <button onclick="deleteMember('${d.id}', '${
-                  d.data().fullName
-                }')" class="del-btn" style="width:auto; padding:5px 10px;">Deny/Delete</button>
-                    </div>`
-              )
-              .join("");
-          }
-        );
-      }
+    // --- ADMIN SPECIFIC LOGIC ---
+    function setupAdminListeners() {
+        onSnapshot(query(collection(db, "applicants"), where("status", "==", "pending")), (snap) => {
+            document.getElementById("pendingList").innerHTML = snap.docs.map(d => `
+                <div class="ref-card" style="border-left-color:#d32f2f;">
+                    <strong>${d.data().fullName}</strong> (${d.data().region})<br>
+                    <button onclick="approveUser('${d.id}')" style="width:auto; padding:5px 10px; margin-top:5px; font-size:11px;">Approve</button>
+                    <button onclick="deleteMember('${d.id}', '${d.data().fullName}')" class="del-btn" style="width:auto; padding:5px 10px;">Deny/Delete</button>
+                </div>`).join("");
+        });
+    }
 
-      function renderAdminManageList(list) {
+    function renderAdminManageList(list) {
         const container = document.getElementById("adminFullList");
-        container.innerHTML = list
-          .map(
-            (ref) => `
-                <div class="ref-card" style="padding:10px;">
-                    <strong>${ref.fullName}</strong><br>
-                    <small>${ref.email}</small><br>
-                    <button onclick="deleteMember('${ref.id}', '${ref.fullName}')" class="del-btn">Delete Member Permanently</button>
-                </div>`
-          )
-          .join("");
-      }
+        container.innerHTML = list.map(ref => `
+            <div class="ref-card" style="padding:10px;">
+                <strong>${ref.fullName}</strong><br>
+                <small>${ref.email}</small><br>
+                <div style="display:flex; gap:5px; margin-top:8px;">
+                    <button onclick="triggerReset('${ref.email}')" style="background:#002366; font-size:10px; padding:6px; width:auto;">Reset Password</button>
+                    <button onclick="deleteMember('${ref.id}', '${ref.fullName}')" class="del-btn" style="margin:0; padding:6px; width:auto;">Delete</button>
+                </div>
+            </div>`).join("");
+    }
 
-      window.runAdminFilter = () => {
-        const q = document
-          .getElementById("adminSearchInput")
-          .value.toLowerCase();
-        const filtered = allApprovedList.filter(
-          (r) =>
-            r.fullName.toLowerCase().includes(q) ||
-            r.email.toLowerCase().includes(q)
-        );
+    window.runAdminFilter = () => {
+        const q = document.getElementById("adminSearchInput").value.toLowerCase();
+        const filtered = allApprovedList.filter(r => r.fullName.toLowerCase().includes(q) || r.email.toLowerCase().includes(q));
         renderAdminManageList(filtered);
-      };
+    };
 
-      window.approveUser = async (uid) => {
+    window.triggerReset = async (email) => {
+        if(confirm(`Send a password reset email to ${email}?`)) {
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Reset email sent successfully!");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+    };
+
+    window.approveUser = async (uid) => {
         await updateDoc(doc(db, "applicants", uid), { status: "approved" });
         alert("Member Approved!");
-      };
+    };
 
-      window.deleteMember = async (uid, name) => {
-        if (
-          confirm(
-            `Are you sure you want to delete ${name}? This cannot be undone.`
-          )
-        ) {
-          await deleteDoc(doc(db, "applicants", uid));
-          alert("Member removed.");
+    window.deleteMember = async (uid, name) => {
+        if (confirm(`Are you sure you want to delete ${name}?`)) {
+            await deleteDoc(doc(db, "applicants", uid));
+            alert("Member removed.");
         }
-      };
+    };
 
-      window.logout = () => location.reload();
-    </script>
+    window.logout = () => location.reload();
+</script>
   </body>
 </html>
