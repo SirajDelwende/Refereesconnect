@@ -284,8 +284,8 @@
       const db = getFirestore(app);
       const auth = getAuth(app);
 
-      let localRefList = [];
-      let allApprovedList = [];
+      let localRefList = []; // For the search directory
+      let allApprovedList = []; // For the admin manage list
       let userData = null;
 
       window.showView = (viewId) => {
@@ -295,7 +295,6 @@
         document.getElementById(viewId).classList.add("active-view");
       };
 
-      // --- LOGIN & AUTH ---
       window.handleLogin = async () => {
         const email = document.getElementById("loginEmail").value;
         const pass = document.getElementById("loginPass").value;
@@ -356,9 +355,9 @@
         }
       };
 
-      // --- DIRECTORY ---
       function initDirectory() {
         showView("directoryView");
+        // Public Directory Sync
         onSnapshot(
           query(
             collection(db, "applicants"),
@@ -366,7 +365,7 @@
           ),
           (snap) => {
             localRefList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-            allApprovedList = localRefList;
+            allApprovedList = localRefList; // Sync admin list too
             renderAdminManageList(allApprovedList);
             document.getElementById("refList").innerHTML =
               '<p style="text-align:center; color:#666;">Search name/region above.</p>';
@@ -394,25 +393,25 @@
         container.innerHTML = filtered
           .map(
             (ref) => `
-            <div class="ref-card">
-                <div onclick="toggleDetails(this)" style="cursor:pointer;">
-                    <strong>${ref.fullName}</strong><br><small>${
+                <div class="ref-card">
+                    <div onclick="toggleDetails(this)" style="cursor:pointer;">
+                        <strong>${ref.fullName}</strong><br><small>${
               ref.region
             }</small>
-                </div>
-                <div class="contact-details">
-                    <p>Phone: ${ref.phone}<br>Email: ${ref.email}</p>
-                    <div class="contact-actions">
-                        <a href="tel:${
-                          ref.phone
-                        }" class="action-link call-btn">Call</a>
-                        <a href="https://wa.me/${ref.phone.replace(
-                          /^0/,
-                          "233"
-                        )}" class="action-link wa-btn" target="_blank">WhatsApp</a>
                     </div>
-                </div>
-            </div>`
+                    <div class="contact-details">
+                        <p>Phone: ${ref.phone}<br>Email: ${ref.email}</p>
+                        <div class="contact-actions">
+                            <a href="tel:${
+                              ref.phone
+                            }" class="action-link call-btn">Call</a>
+                            <a href="https://wa.me/${ref.phone.replace(
+                              /^0/,
+                              "233"
+                            )}" class="action-link wa-btn" target="_blank">WhatsApp</a>
+                        </div>
+                    </div>
+                </div>`
           )
           .join("");
       };
@@ -424,23 +423,24 @@
 
       // --- ADMIN SPECIFIC LOGIC ---
       function setupAdminListeners() {
+        // Pending Applicants
         onSnapshot(
           query(collection(db, "applicants"), where("status", "==", "pending")),
           (snap) => {
             document.getElementById("pendingList").innerHTML = snap.docs
               .map(
                 (d) => `
-                <div class="ref-card" style="border-left-color:#d32f2f;">
-                    <strong>${d.data().fullName}</strong> (${
+                    <div class="ref-card" style="border-left-color:#d32f2f;">
+                        <strong>${d.data().fullName}</strong> (${
                   d.data().region
                 })<br>
-                    <button onclick="approveUser('${
-                      d.id
-                    }')" style="width:auto; padding:5px 10px; margin-top:5px; font-size:11px;">Approve</button>
-                    <button onclick="deleteMember('${d.id}', '${
+                        <button onclick="approveUser('${
+                          d.id
+                        }')" style="width:auto; padding:5px 10px; margin-top:5px; font-size:11px;">Approve</button>
+                        <button onclick="deleteMember('${d.id}', '${
                   d.data().fullName
                 }')" class="del-btn" style="width:auto; padding:5px 10px;">Deny/Delete</button>
-                </div>`
+                    </div>`
               )
               .join("");
           }
@@ -452,14 +452,11 @@
         container.innerHTML = list
           .map(
             (ref) => `
-            <div class="ref-card" style="padding:10px;">
-                <strong>${ref.fullName}</strong><br>
-                <small>${ref.email}</small><br>
-                <div style="display:flex; gap:5px; margin-top:8px;">
-                    <button onclick="triggerReset('${ref.email}')" style="background:#002366; font-size:10px; padding:6px; width:auto;">Reset Password</button>
-                    <button onclick="deleteMember('${ref.id}', '${ref.fullName}')" class="del-btn" style="margin:0; padding:6px; width:auto;">Delete</button>
-                </div>
-            </div>`
+                <div class="ref-card" style="padding:10px;">
+                    <strong>${ref.fullName}</strong><br>
+                    <small>${ref.email}</small><br>
+                    <button onclick="deleteMember('${ref.id}', '${ref.fullName}')" class="del-btn">Delete Member Permanently</button>
+                </div>`
           )
           .join("");
       }
@@ -476,24 +473,17 @@
         renderAdminManageList(filtered);
       };
 
-      window.triggerReset = async (email) => {
-        if (confirm(`Send a password reset email to ${email}?`)) {
-          try {
-            await sendPasswordResetEmail(auth, email);
-            alert("Reset email sent successfully!");
-          } catch (e) {
-            alert("Error: " + e.message);
-          }
-        }
-      };
-
       window.approveUser = async (uid) => {
         await updateDoc(doc(db, "applicants", uid), { status: "approved" });
         alert("Member Approved!");
       };
 
       window.deleteMember = async (uid, name) => {
-        if (confirm(`Are you sure you want to delete ${name}?`)) {
+        if (
+          confirm(
+            `Are you sure you want to delete ${name}? This cannot be undone.`
+          )
+        ) {
           await deleteDoc(doc(db, "applicants", uid));
           alert("Member removed.");
         }
