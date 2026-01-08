@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <link rel="manifest" href="manifest.json" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent" />
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>GFA Referee Connect</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent" />
+    <meta name="theme-color" content="#4169e1" />
+
     <style>
-      /* --- 1. GLOBAL MOBILE RESET --- */
       body,
       html {
         margin: 0;
@@ -20,17 +21,14 @@
         height: 100%;
         overflow-x: hidden;
       }
-
       body {
         background: linear-gradient(135deg, #4169e1 0%, #00102d 100%);
         display: flex;
         justify-content: center;
-        align-items: flex-start; /* Pushes content to the top */
-        padding-top: 10px; /* Minimal top gap */
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        align-items: flex-start;
+        padding-top: 10px;
+        font-family: "Segoe UI", sans-serif;
       }
-
-      /* Glassmorphism Container */
       .container {
         width: 90%;
         max-width: 340px;
@@ -38,45 +36,37 @@
         padding: 20px;
         border-radius: 24px;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-        margin-top: 5px; /* Pushes app shell higher */
-        min-height: 530px;
+        margin-top: 5px;
+        min-height: 500px;
       }
-
       .logo {
         display: block;
         margin: 0 auto 5px;
-        max-width: 70px; /* Smaller logo */
+        max-width: 70px;
         height: auto;
       }
-
       header {
         text-align: center;
         margin-bottom: 15px;
       }
-
       header h1 {
         color: #002366;
         margin: 0;
         font-size: 1.3rem;
       }
-
       header p {
         color: #035416;
         font-size: 0.75rem;
-        margin: 2px 0;
         font-weight: bold;
       }
 
-      /* View Transitions */
       .view-section {
         display: none;
       }
-
       .active-view {
         display: block;
         animation: fadeIn 0.4s ease;
       }
-
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -88,7 +78,6 @@
         }
       }
 
-      /* Form Elements */
       input,
       select {
         width: 100%;
@@ -99,7 +88,6 @@
         box-sizing: border-box;
         font-size: 16px;
       }
-
       button {
         width: 100%;
         padding: 12px;
@@ -111,28 +99,25 @@
         cursor: pointer;
       }
 
-      /* Member Cards */
       .ref-card {
         background: #ffffff;
         padding: 12px;
         border-radius: 10px;
         margin-bottom: 10px;
         border-left: 5px solid #010f37;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
-
       .contact-details {
         display: none;
         margin-top: 10px;
         padding-top: 10px;
         border-top: 1px solid #eee;
       }
-
       .contact-actions {
         display: flex;
         gap: 8px;
         margin-top: 10px;
       }
-
       .action-link {
         flex: 1;
         text-align: center;
@@ -143,7 +128,6 @@
         font-size: 13px;
         font-weight: bold;
       }
-
       .wa-btn {
         background-color: #25d366;
       }
@@ -152,11 +136,10 @@
       }
       .del-btn {
         background-color: #c62828;
-        font-size: 10px;
-        padding: 4px;
-        width: auto;
+        font-size: 11px;
+        padding: 6px;
+        margin-top: 8px;
       }
-
       .forgot-link {
         display: block;
         text-align: right;
@@ -172,7 +155,6 @@
   <body>
     <div class="container">
       <img src="Ghana-Football-Association.jpg" alt="Logo" class="logo" />
-
       <header>
         <h1>Referee Connect</h1>
         <p>Match Coordination Portal</p>
@@ -184,9 +166,7 @@
         <a href="#" onclick="handleForgotPassword()" class="forgot-link"
           >Forgot Password?</a
         >
-
         <button onclick="handleLogin()">Login</button>
-
         <p style="text-align: center; margin-top: 15px; font-size: 0.85rem">
           New?
           <a
@@ -200,29 +180,18 @@
 
       <div id="registerView" class="view-section">
         <input type="text" id="regName" placeholder="Full Name" />
-        <select id="regRole">
-          <option value="" disabled selected>Role</option>
-          <option value="Referee">Referee</option>
-          <option value="Assistant Referee">Assistant Referee</option>
-        </select>
         <select id="regRegion">
-          <option value="" disabled selected>Region</option>
+          <option value="" disabled selected>Select Region</option>
           <option value="Greater Accra">Greater Accra</option>
           <option value="Ashanti">Ashanti</option>
-          <option value="Northern">Northern</option>
-          <option value="Volta">Volta</option>
-          <option value="Western">Western</option>
           <option value="Eastern">Eastern</option>
-          <option value="Eastern">Upper East</option>
-          <option value="Eastern">Upper West</option>
-          <option value="Eastern">Central</option>
-          <option value="Eastern">Bono Ahafo</option>
-        </select>
-        <select id="regLeague">
-          <option value="" disabled selected>League</option>
-          <option value="Premier">Premier</option>
-          <option value="Division One">Division One</option>
-          <option value="Women Premier">Women Premier</option>
+          <option value="Western">Western</option>
+          <option value="Central">Central</option>
+          <option value="Volta">Volta</option>
+          <option value="Northern">Northern</option>
+          <option value="Upper East">Upper East</option>
+          <option value="Upper West">Upper West</option>
+          <option value="Bono Ahafo">Bono Ahafo</option>
         </select>
         <input type="tel" id="regPhone" placeholder="Phone Number" />
         <input type="email" id="regEmail" placeholder="Email" />
@@ -230,7 +199,7 @@
         <button onclick="handleRegister()">Submit Registration</button>
         <p style="text-align: center; margin-top: 10px">
           <a href="#" onclick="showView('loginView')" style="font-size: 0.8rem"
-            >Back to Login</a
+            >Back</a
           >
         </p>
       </div>
@@ -239,7 +208,7 @@
         <input
           type="text"
           id="searchInput"
-          placeholder="Search name..."
+          placeholder="Search name or region..."
           onkeyup="runFilter()" />
         <div id="refList"></div>
         <div style="display: flex; gap: 10px; margin-top: 15px">
@@ -247,18 +216,34 @@
             id="adminBtn"
             onclick="showView('adminView')"
             style="display: none; background: #002366">
-            Admin
+            Admin Panel
           </button>
           <button onclick="logout()" style="background: #3e74c5">Logout</button>
         </div>
       </div>
 
       <div id="adminView" class="view-section">
-        <h3 style="color: #d32f2f; font-size: 1rem">Pending</h3>
+        <h3 style="color: #d32f2f; font-size: 1rem; margin: 0 0 10px">
+          Pending Approvals
+        </h3>
         <div id="pendingList"></div>
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc" />
-        <button onclick="showView('directoryView')" style="background: #4169e1">
-          Back
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc" />
+
+        <h3 style="color: #002366; font-size: 1rem; margin: 0 0 10px">
+          Delete/Manage Members
+        </h3>
+        <input
+          type="text"
+          id="adminSearchInput"
+          placeholder="Find member to delete..."
+          onkeyup="runAdminFilter()" />
+        <div id="adminFullList"></div>
+
+        <button
+          onclick="showView('directoryView')"
+          style="background: #4169e1; margin-top: 15px">
+          Back to Directory
         </button>
       </div>
     </div>
@@ -300,6 +285,7 @@
       const auth = getAuth(app);
 
       let localRefList = [];
+      let allApprovedList = [];
       let userData = null;
 
       window.showView = (viewId) => {
@@ -309,10 +295,10 @@
         document.getElementById(viewId).classList.add("active-view");
       };
 
+      // --- LOGIN & AUTH ---
       window.handleLogin = async () => {
         const email = document.getElementById("loginEmail").value;
         const pass = document.getElementById("loginPass").value;
-        if (!email || !pass) return alert("Fill fields.");
         try {
           const userCred = await signInWithEmailAndPassword(auth, email, pass);
           const userDoc = await getDoc(
@@ -330,18 +316,18 @@
             }
           }
         } catch (e) {
-          alert("Login Error: " + e.message);
+          alert("Error: " + e.message);
         }
       };
 
       window.handleForgotPassword = async () => {
         const email = document.getElementById("loginEmail").value;
-        if (!email) return alert("Enter email address above first.");
+        if (!email) return alert("Type your email first.");
         try {
           await sendPasswordResetEmail(auth, email);
-          alert("Reset link sent to your email!");
+          alert("Reset link sent to email!");
         } catch (e) {
-          alert("Error: " + e.message);
+          alert(e.message);
         }
       };
 
@@ -350,9 +336,7 @@
         const pass = document.getElementById("regPass").value;
         const data = {
           fullName: document.getElementById("regName").value,
-          role: document.getElementById("regRole").value,
           region: document.getElementById("regRegion").value,
-          league: document.getElementById("regLeague").value,
           phone: document.getElementById("regPhone").value,
           email: email,
           status: "pending",
@@ -365,13 +349,14 @@
             pass
           );
           await setDoc(doc(db, "applicants", userCred.user.uid), data);
-          alert("Submitted! Contact GFA for approval.");
+          alert("Registration Successful. Pending Approval.");
           showView("loginView");
         } catch (e) {
-          alert("Error: " + e.message);
+          alert(e.message);
         }
       };
 
+      // --- DIRECTORY ---
       function initDirectory() {
         showView("directoryView");
         onSnapshot(
@@ -380,12 +365,14 @@
             where("status", "==", "approved")
           ),
           (snap) => {
-            localRefList = snap.docs.map((d) => d.data());
+            localRefList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            allApprovedList = localRefList;
+            renderAdminManageList(allApprovedList);
             document.getElementById("refList").innerHTML =
-              '<p style="text-align:center; color:#666; font-size:0.8rem; margin-top:10px;">Search names above.</p>';
+              '<p style="text-align:center; color:#666;">Search name/region above.</p>';
           }
         );
-        if (userData.isAdmin) setupAdminQueue();
+        if (userData.isAdmin) setupAdminListeners();
       }
 
       window.runFilter = () => {
@@ -399,28 +386,34 @@
             '<p style="text-align:center; color:#666;">Search names.</p>';
           return;
         }
-        const filtered = localRefList.filter((r) =>
-          r.fullName.toLowerCase().includes(q)
+        const filtered = localRefList.filter(
+          (r) =>
+            r.fullName.toLowerCase().includes(q) ||
+            r.region.toLowerCase().includes(q)
         );
         container.innerHTML = filtered
-          .map((ref) => {
-            let waPhone = ref.phone.replace(/\s+/g, "");
-            if (waPhone.startsWith("0")) waPhone = "233" + waPhone.substring(1);
-            return `
+          .map(
+            (ref) => `
             <div class="ref-card">
-              <div onclick="toggleDetails(this)" style="cursor:pointer;">
-                <strong style="color:#002366;">${ref.fullName}</strong><br>
-                <small style="color:#2e7d32;">${ref.region} • View</small>
-              </div>
-              <div class="contact-details">
-                <p>Role: ${ref.role}<br>League: ${ref.league}<br>Phone: ${ref.phone}</p>
-                <div class="contact-actions">
-                  <a href="https://wa.me/${waPhone}" class="action-link wa-btn" target="_blank">WhatsApp</a>
-                  <a href="tel:${ref.phone}" class="action-link call-btn">Call</a>
+                <div onclick="toggleDetails(this)" style="cursor:pointer;">
+                    <strong>${ref.fullName}</strong><br><small>${
+              ref.region
+            }</small>
                 </div>
-              </div>
-            </div>`;
-          })
+                <div class="contact-details">
+                    <p>Phone: ${ref.phone}<br>Email: ${ref.email}</p>
+                    <div class="contact-actions">
+                        <a href="tel:${
+                          ref.phone
+                        }" class="action-link call-btn">Call</a>
+                        <a href="https://wa.me/${ref.phone.replace(
+                          /^0/,
+                          "233"
+                        )}" class="action-link wa-btn" target="_blank">WhatsApp</a>
+                    </div>
+                </div>
+            </div>`
+          )
           .join("");
       };
 
@@ -429,28 +422,81 @@
         d.style.display = d.style.display === "block" ? "none" : "block";
       };
 
-      function setupAdminQueue() {
+      // --- ADMIN SPECIFIC LOGIC ---
+      function setupAdminListeners() {
         onSnapshot(
           query(collection(db, "applicants"), where("status", "==", "pending")),
           (snap) => {
             document.getElementById("pendingList").innerHTML = snap.docs
               .map(
                 (d) => `
-            <div class="ref-card" style="border-left-color:#d32f2f;">
-              <strong>${d.data().fullName}</strong><br>
-              <button onclick="approveUser('${
-                d.id
-              }')" style="width:auto; padding:4px 8px; margin-top:5px; font-size:10px;">Approve</button>
-            </div>`
+                <div class="ref-card" style="border-left-color:#d32f2f;">
+                    <strong>${d.data().fullName}</strong> (${
+                  d.data().region
+                })<br>
+                    <button onclick="approveUser('${
+                      d.id
+                    }')" style="width:auto; padding:5px 10px; margin-top:5px; font-size:11px;">Approve</button>
+                    <button onclick="deleteMember('${d.id}', '${
+                  d.data().fullName
+                }')" class="del-btn" style="width:auto; padding:5px 10px;">Deny/Delete</button>
+                </div>`
               )
               .join("");
           }
         );
       }
 
+      function renderAdminManageList(list) {
+        const container = document.getElementById("adminFullList");
+        container.innerHTML = list
+          .map(
+            (ref) => `
+            <div class="ref-card" style="padding:10px;">
+                <strong>${ref.fullName}</strong><br>
+                <small>${ref.email}</small><br>
+                <div style="display:flex; gap:5px; margin-top:8px;">
+                    <button onclick="triggerReset('${ref.email}')" style="background:#002366; font-size:10px; padding:6px; width:auto;">Reset Password</button>
+                    <button onclick="deleteMember('${ref.id}', '${ref.fullName}')" class="del-btn" style="margin:0; padding:6px; width:auto;">Delete</button>
+                </div>
+            </div>`
+          )
+          .join("");
+      }
+
+      window.runAdminFilter = () => {
+        const q = document
+          .getElementById("adminSearchInput")
+          .value.toLowerCase();
+        const filtered = allApprovedList.filter(
+          (r) =>
+            r.fullName.toLowerCase().includes(q) ||
+            r.email.toLowerCase().includes(q)
+        );
+        renderAdminManageList(filtered);
+      };
+
+      window.triggerReset = async (email) => {
+        if (confirm(`Send a password reset email to ${email}?`)) {
+          try {
+            await sendPasswordResetEmail(auth, email);
+            alert("Reset email sent successfully!");
+          } catch (e) {
+            alert("Error: " + e.message);
+          }
+        }
+      };
+
       window.approveUser = async (uid) => {
         await updateDoc(doc(db, "applicants", uid), { status: "approved" });
-        alert("Approved!");
+        alert("Member Approved!");
+      };
+
+      window.deleteMember = async (uid, name) => {
+        if (confirm(`Are you sure you want to delete ${name}?`)) {
+          await deleteDoc(doc(db, "applicants", uid));
+          alert("Member removed.");
+        }
       };
 
       window.logout = () => location.reload();
