@@ -2,124 +2,236 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GFA Admin - Secure Approval</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Admin Panel - GFA Referee Connect</title>
+    <style>
+      /* Shared Styles copied for consistency */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: "Segoe UI", sans-serif;
+      }
+      body {
+        background: #00102d;
+        display: flex;
+        justify-content: center;
+        padding-top: 10px;
+      }
+      .container {
+        width: 90%;
+        max-width: 340px;
+        background: rgba(108, 188, 227, 0.98);
+        padding: 20px;
+        border-radius: 24px;
+        min-height: 500px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      }
+      h2 {
+        color: #002366;
+        text-align: center;
+        font-size: 1.2rem;
+      }
+      h3 {
+        font-size: 1rem;
+        margin-top: 20px;
+        border-bottom: 1px solid #002366;
+        padding-bottom: 5px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #024705;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 5px;
+      }
+      .ref-card {
+        background: #ffffff;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        border-left: 5px solid #010f37;
+      }
+      .del-btn {
+        background: #c62828;
+        font-size: 11px;
+        width: auto;
+        padding: 5px 10px;
+      }
+      .approve-btn {
+        background: #024705;
+        font-size: 11px;
+        width: auto;
+        padding: 5px 10px;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
-      <h1 style="color: #d32f2f">GFA Admin Panel</h1>
-      <div
-        id="adminStatus"
-        class="stats-bar"
-        style="
-          background: #f0f2f5;
-          padding: 10px;
-          border-radius: 8px;
-          margin-bottom: 15px;
-          text-align: center;
-        ">
-        Verifying Admin Credentials...
-      </div>
+      <h2>Admin Dashboard</h2>
 
-      <div id="adminContent" style="display: none">
-        <div id="stats" style="font-weight: bold; margin-bottom: 15px">
-          Pending: 0
-        </div>
-        <div id="pendingList"></div>
-      </div>
+      <h3>Pending Approvals</h3>
+      <div id="pendingList"></div>
+
+      <h3>Manage Members</h3>
+      <input
+        type="text"
+        id="adminSearchInput"
+        placeholder="Find member to delete..."
+        onkeyup="runAdminFilter()" />
+      <div id="adminFullList"></div>
 
       <button
         onclick="window.location.href='index.html'"
-        style="background: #666; margin-top: 20px">
-        Return to Main Site
+        style="background: #4169e1; margin-top: 20px">
+        Back to Directory
       </button>
     </div>
 
     <script type="module">
-      import { db } from "./app.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import {
-        getAuth,
-        onAuthStateChanged,
-      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-      import {
+        getFirestore,
+        doc,
+        getDoc,
         collection,
         query,
         where,
         onSnapshot,
-        doc,
         updateDoc,
-        getDoc,
+        deleteDoc,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        sendPasswordResetEmail,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-      const auth = getAuth();
-      const adminStatus = document.getElementById("adminStatus");
-      const adminContent = document.getElementById("adminContent");
-      const listContainer = document.getElementById("pendingList");
+      const firebaseConfig = {
+        apiKey: "AIzaSyDE6XmDl8CF4oEYHZZ_01tn0ct_N84uTxo",
+        authDomain: "referees-connect-app.firebaseapp.com",
+        projectId: "referees-connect-app",
+        storageBucket: "referees-connect-app.firebasestorage.app",
+        messagingSenderId: "218749388164",
+        appId: "1:218749388164:web:f6399de1346af790df49d1",
+        measurementId: "G-BSW1J449HC",
+      };
 
-      // Security Check: Verify Admin Status
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
+
+      let allApprovedList = [];
+
+      // Security Check: Only allow Admins to stay on this page
       onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          const userDoc = await getDoc(doc(db, "applicants", user.uid));
-
-          if (userDoc.exists() && userDoc.data().isAdmin === true) {
-            adminStatus.innerHTML = "✅ Admin Access Granted";
-            adminStatus.style.background = "#e8f5e9";
-            adminContent.style.display = "block";
-            loadPendingQueue();
-          } else {
-            alert("Access Denied: You do not have GFA Admin privileges.");
-            window.location.href = "index.html";
-          }
-        } else {
-          alert("Please login first.");
+        if (!user) {
           window.location.href = "index.html";
+          return;
+        }
+        const userDoc = await getDoc(doc(db, "applicants", user.uid));
+        if (!userDoc.exists() || !userDoc.data().isAdmin) {
+          alert("Access Denied!");
+          window.location.href = "index.html";
+        } else {
+          setupAdminListeners();
         }
       });
 
-      // Load Queue Logic
-      function loadPendingQueue() {
-        const q = query(
-          collection(db, "applicants"),
-          where("status", "==", "pending")
+      function setupAdminListeners() {
+        // Pending List
+        onSnapshot(
+          query(collection(db, "applicants"), where("status", "==", "pending")),
+          (snap) => {
+            document.getElementById("pendingList").innerHTML = snap.docs
+              .map(
+                (d) => `
+                    <div class="ref-card" style="border-left-color:#d32f2f;">
+                        <strong>${d.data().fullName}</strong><br><small>${
+                  d.data().region
+                } | ${d.data().role}</small><br>
+                        <button class="approve-btn" onclick="approveUser('${
+                          d.id
+                        }')">Approve</button>
+                        <button class="del-btn" onclick="deleteMember('${
+                          d.id
+                        }', '${d.data().fullName}')">Deny</button>
+                    </div>`
+              )
+              .join("");
+          }
         );
 
-        onSnapshot(q, (snapshot) => {
-          listContainer.innerHTML = "";
-          document.getElementById(
-            "stats"
-          ).innerText = `Pending Approvals: ${snapshot.size}`;
-
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const card = document.createElement("div");
-            card.className = "ref-card";
-            card.style.borderLeft = "5px solid #d32f2f";
-            card.style.marginBottom = "10px";
-            card.style.padding = "10px";
-            card.style.background = "#fff";
-
-            card.innerHTML = `
-                        <strong>${data.fullName}</strong><br>
-                        <small>${data.region} | ${data.league}</small><br>
-                        <button onclick="approveUser('${docSnap.id}')" style="background:#2e7d32; margin-top:10px; padding:8px; width:100%;">
-                            Approve Referee
-                        </button>
-                    `;
-            listContainer.appendChild(card);
-          });
-        });
+        // Full Member List
+        onSnapshot(
+          query(
+            collection(db, "applicants"),
+            where("status", "==", "approved")
+          ),
+          (snap) => {
+            allApprovedList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            renderAdminManageList(allApprovedList);
+          }
+        );
       }
 
-      // Approval Logic
-      window.approveUser = async (userId) => {
-        const userRef = doc(db, "applicants", userId);
-        try {
-          await updateDoc(userRef, { status: "approved" });
-          alert("Referee approved and notified!");
-        } catch (error) {
-          console.error("Update failed:", error);
-          alert("You do not have permission to approve users.");
+      function renderAdminManageList(list) {
+        document.getElementById("adminFullList").innerHTML = list
+          .map(
+            (ref) => `
+                <div class="ref-card">
+                    <strong>${ref.fullName}</strong><br><small>${ref.email}</small>
+                    <div style="display:flex; gap:5px; margin-top:5px;">
+                        <button onclick="triggerReset('${ref.email}')" style="background:#002366; font-size:10px; width:auto; padding:5px;">Reset PW</button>
+                        <button class="del-btn" onclick="deleteMember('${ref.id}', '${ref.fullName}')" style="margin:0;">Delete</button>
+                    </div>
+                </div>`
+          )
+          .join("");
+      }
+
+      window.runAdminFilter = () => {
+        const q = document
+          .getElementById("adminSearchInput")
+          .value.toLowerCase();
+        renderAdminManageList(
+          allApprovedList.filter(
+            (r) =>
+              r.fullName.toLowerCase().includes(q) ||
+              r.email.toLowerCase().includes(q)
+          )
+        );
+      };
+
+      window.approveUser = async (uid) => {
+        await updateDoc(doc(db, "applicants", uid), { status: "approved" });
+        alert("Approved!");
+      };
+      window.deleteMember = async (uid, name) => {
+        if (confirm(`Delete ${name}?`)) {
+          await deleteDoc(doc(db, "applicants", uid));
+          alert("Removed.");
+        }
+      };
+      window.triggerReset = async (email) => {
+        if (confirm(`Send reset email to ${email}?`)) {
+          await sendPasswordResetEmail(auth, email);
+          alert("Sent!");
         }
       };
     </script>

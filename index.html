@@ -8,26 +8,22 @@
     <title>GFA Referee Connect</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent" />
     <meta name="theme-color" content="#4169e1" />
-
     <style>
+      /* Shared Styles */
       body,
       html {
         margin: 0;
         padding: 0;
         height: 100%;
         overflow-x: hidden;
+        font-family: "Segoe UI", sans-serif;
       }
       body {
         background: linear-gradient(135deg, #4169e1 0%, #00102d 100%);
         display: flex;
         justify-content: center;
-        align-items: flex-start;
         padding-top: 10px;
-        font-family: "Segoe UI", sans-serif;
       }
       .container {
         width: 90%;
@@ -36,7 +32,6 @@
         padding: 20px;
         border-radius: 24px;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-        margin-top: 5px;
         min-height: 500px;
       }
       .logo {
@@ -59,7 +54,6 @@
         font-size: 0.75rem;
         font-weight: bold;
       }
-
       .view-section {
         display: none;
       }
@@ -77,7 +71,6 @@
           transform: translateY(0);
         }
       }
-
       input,
       select {
         width: 100%;
@@ -85,8 +78,8 @@
         margin-bottom: 12px;
         border-radius: 8px;
         border: 1px solid #ccc;
-        box-sizing: border-box;
         font-size: 16px;
+        box-sizing: border-box;
       }
       button {
         width: 100%;
@@ -98,7 +91,6 @@
         font-weight: bold;
         cursor: pointer;
       }
-
       .ref-card {
         background: #ffffff;
         padding: 12px;
@@ -133,12 +125,6 @@
       }
       .call-btn {
         background-color: #002366;
-      }
-      .del-btn {
-        background-color: #c62828;
-        font-size: 11px;
-        padding: 6px;
-        margin-top: 8px;
       }
       .forgot-link {
         display: block;
@@ -225,52 +211,25 @@
           placeholder="Search name or region..."
           onkeyup="runFilter()" />
         <div id="refList"></div>
-        <div style="display: flex; gap: 10px; margin-top: 15px">
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+          ">
           <button
             id="adminBtn"
-            onclick="showView('adminView')"
+            onclick="window.location.href='admin.html'"
             style="display: none; background: #002366">
             Admin Panel
           </button>
           <button onclick="logout()" style="background: #3e74c5">Logout</button>
         </div>
       </div>
-
-      <div id="adminView" class="view-section">
-        <h3 style="color: #d32f2f; font-size: 1rem; margin: 0 0 10px">
-          Pending Approvals
-        </h3>
-        <div id="pendingList"></div>
-
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc" />
-
-        <h3 style="color: #002366; font-size: 1rem; margin: 0 0 10px">
-          Manage Members
-        </h3>
-        <input
-          type="text"
-          id="adminSearchInput"
-          placeholder="Find member to delete..."
-          onkeyup="runAdminFilter()" />
-        <div id="adminFullList"></div>
-
-        <button
-          onclick="showView('directoryView')"
-          style="background: #4169e1; margin-top: 15px">
-          Back to Directory
-        </button>
-      </div>
     </div>
 
     <script type="module">
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/sw.js")
-            .catch((err) => console.log("SW Failed", err));
-        });
-      }
-
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import {
         getFirestore,
@@ -281,8 +240,6 @@
         query,
         where,
         onSnapshot,
-        updateDoc,
-        deleteDoc,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
       import {
         getAuth,
@@ -307,7 +264,6 @@
       const auth = getAuth(app);
 
       let localRefList = [];
-      let allApprovedList = [];
       let userData = null;
 
       window.showView = (viewId) => {
@@ -338,17 +294,6 @@
           }
         } catch (e) {
           alert("Error: " + e.message);
-        }
-      };
-
-      window.handleForgotPassword = async () => {
-        const email = document.getElementById("loginEmail").value;
-        if (!email) return alert("Type your email first.");
-        try {
-          await sendPasswordResetEmail(auth, email);
-          alert("Reset link sent to email!");
-        } catch (e) {
-          alert(e.message);
         }
       };
 
@@ -388,13 +333,10 @@
           ),
           (snap) => {
             localRefList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-            allApprovedList = localRefList;
-            renderAdminManageList(allApprovedList);
             document.getElementById("refList").innerHTML =
               '<p style="text-align:center; color:#666;">Search name/region above.</p>';
           }
         );
-        if (userData.isAdmin) setupAdminListeners();
       }
 
       window.runFilter = () => {
@@ -416,27 +358,27 @@
         container.innerHTML = filtered
           .map(
             (ref) => `
-              <div class="ref-card">
-                  <div onclick="toggleDetails(this)" style="cursor:pointer;">
-                      <strong>${ref.fullName}</strong><br><small>${
+                <div class="ref-card">
+                    <div onclick="toggleDetails(this)" style="cursor:pointer;">
+                        <strong>${ref.fullName}</strong><br><small>${
               ref.region
             } | ${ref.role}</small>
-                  </div>
-                  <div class="contact-details">
-                      <p>League: ${ref.league}<br>Phone: ${
+                    </div>
+                    <div class="contact-details">
+                        <p>League: ${ref.league}<br>Phone: ${
               ref.phone
             }<br>Email: ${ref.email}</p>
-                      <div class="contact-actions">
-                          <a href="tel:${
-                            ref.phone
-                          }" class="action-link call-btn">Call</a>
-                          <a href="https://wa.me/${ref.phone.replace(
-                            /^0/,
-                            "233"
-                          )}" class="action-link wa-btn" target="_blank">WhatsApp</a>
-                      </div>
-                  </div>
-              </div>`
+                        <div class="contact-actions">
+                            <a href="tel:${
+                              ref.phone
+                            }" class="action-link call-btn">Call</a>
+                            <a href="https://wa.me/${ref.phone.replace(
+                              /^0/,
+                              "233"
+                            )}" class="action-link wa-btn" target="_blank">WhatsApp</a>
+                        </div>
+                    </div>
+                </div>`
           )
           .join("");
       };
@@ -446,84 +388,19 @@
         d.style.display = d.style.display === "block" ? "none" : "block";
       };
 
-      function setupAdminListeners() {
-        onSnapshot(
-          query(collection(db, "applicants"), where("status", "==", "pending")),
-          (snap) => {
-            document.getElementById("pendingList").innerHTML = snap.docs
-              .map(
-                (d) => `
-                  <div class="ref-card" style="border-left-color:#d32f2f;">
-                      <strong>${d.data().fullName}</strong> (${
-                  d.data().region
-                })<br>
-                      <small>${d.data().role} - ${d.data().league}</small><br>
-                      <button onclick="approveUser('${
-                        d.id
-                      }')" style="width:auto; padding:5px 10px; margin-top:5px; font-size:11px;">Approve</button>
-                      <button onclick="deleteMember('${d.id}', '${
-                  d.data().fullName
-                }')" class="del-btn" style="width:auto; padding:5px 10px;">Deny/Delete</button>
-                  </div>`
-              )
-              .join("");
-          }
-        );
-      }
-
-      function renderAdminManageList(list) {
-        const container = document.getElementById("adminFullList");
-        container.innerHTML = list
-          .map(
-            (ref) => `
-              <div class="ref-card" style="padding:10px;">
-                  <strong>${ref.fullName}</strong><br>
-                  <small>${ref.email}</small><br>
-                  <div style="display:flex; gap:5px; margin-top:8px;">
-                      <button onclick="triggerReset('${ref.email}')" style="background:#002366; font-size:10px; padding:6px; width:auto;">Reset Password</button>
-                      <button onclick="deleteMember('${ref.id}', '${ref.fullName}')" class="del-btn" style="margin:0; padding:6px; width:auto;">Delete</button>
-                  </div>
-              </div>`
-          )
-          .join("");
-      }
-
-      window.runAdminFilter = () => {
-        const q = document
-          .getElementById("adminSearchInput")
-          .value.toLowerCase();
-        const filtered = allApprovedList.filter(
-          (r) =>
-            r.fullName.toLowerCase().includes(q) ||
-            r.email.toLowerCase().includes(q)
-        );
-        renderAdminManageList(filtered);
+      window.logout = () => {
+        signOut(auth).then(() => location.reload());
       };
-
-      window.triggerReset = async (email) => {
-        if (confirm(`Send a password reset email to ${email}?`)) {
-          try {
-            await sendPasswordResetEmail(auth, email);
-            alert("Reset email sent!");
-          } catch (e) {
-            alert("Error: " + e.message);
-          }
+      window.handleForgotPassword = async () => {
+        const email = document.getElementById("loginEmail").value;
+        if (!email) return alert("Type your email first.");
+        try {
+          await sendPasswordResetEmail(auth, email);
+          alert("Reset link sent!");
+        } catch (e) {
+          alert(e.message);
         }
       };
-
-      window.approveUser = async (uid) => {
-        await updateDoc(doc(db, "applicants", uid), { status: "approved" });
-        alert("Member Approved!");
-      };
-
-      window.deleteMember = async (uid, name) => {
-        if (confirm(`Are you sure you want to delete ${name}?`)) {
-          await deleteDoc(doc(db, "applicants", uid));
-          alert("Member removed.");
-        }
-      };
-
-      window.logout = () => location.reload();
     </script>
   </body>
 </html>
